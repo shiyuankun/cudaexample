@@ -1,7 +1,6 @@
 #include <stdio.h>
+#include <time.h>
 #include "matrix.h"
-
-
 
 void
 MatrixMulOnHost(const Matrix M, const Matrix N, Matrix P)
@@ -52,20 +51,23 @@ testMatrixMulOnHost()
 {
     Matrix M = Initialize(MIDDLE, HEIGHT, 1);
     Matrix N = Initialize(WIDTH, MIDDLE, 1);
-    Matrix X = TransposeHost(N);
     Matrix P = Initialize(WIDTH, HEIGHT, 0);
     Matrix Pt = Initialize(WIDTH, HEIGHT, 0);
-    /* printf("Matrix M:\n"); */
-    /* PrintMatrix(M); */
-    /* printf("Matrix N:\n"); */
-    /* PrintMatrix(N); */
-    /* printf("Matrix Transpose of N:\n"); */
-    /* PrintMatrix(X); */
+    clock_t start, finish;
+    start = clock();
     MatrixMulOnHost(M, N, P);
+    finish = clock();
+    double elapsed_time = finish - start;
+    printf("spend on simple multiplication %f\n", elapsed_time);
     /* printf("Matrix P:\n"); */
     /* PrintMatrix(P); */
     /* printf("Matrix P from tranpose N:\n"); */
+    start = clock();
+    Matrix X = TransposeHost(N);
     MatrixMulOnHostT(M, X, Pt);
+    finish = clock();
+    elapsed_time = finish - start;
+    printf("spend on transpose %f\n", elapsed_time);
     if (CmpMat(P, Pt))
         printf("%s\n", "correct");
     else

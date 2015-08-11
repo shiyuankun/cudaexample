@@ -20,11 +20,23 @@ CmpMat(Matrix l, Matrix r)
     
     for (i = 0;i<l->height;i ++ )
         for (j = 0;j<l->width;j ++ )
-            if (fabs(l->elements[i*l->width + j] - r->elements[i*r->width + j])>0.00001)
+            if (fabs(l->elements[i*l->width + j] - r->elements[i*r->width + j])>0.00001 * fabs(l->elements[i*l->width + j]))
             {
                 return 0;
             }
     return 1;
+}
+
+void
+randomseed()
+{
+    srand((unsigned) time(NULL));
+}
+
+float
+random(float low, float up)
+{
+    return (float) rand() / (float) RAND_MAX / (up - low) + low;
 }
 
 Matrix
@@ -40,7 +52,8 @@ Initialize(int width, int height, int initval)
     {
         for (i = 0;i < x->height;i++)
             for (j = 0;j < x->width;j++)
-                x->elements[i * x->width + j] = i*10.0 + j;
+                // x->elements[i * x->width + j] = i*10.0 + j;
+                x->elements[i * x->width + j] = random(0.0, 1.0);
     }
     return x;
 }

@@ -12,6 +12,8 @@ void CopyFromDeviceMatrix(Matrix Mhost, const Matrix Mdevice);
 void FreeDeviceMatrix(Matrix Mdevice);
 void FreeMatrix(Matrix Mhost);
 void PrintMatrix(Matrix Mhost);
+void randomseed();
+float random(float low, float up);
 
 struct MatrixStruct{
     int width;
@@ -20,6 +22,6 @@ struct MatrixStruct{
     float * elements;
 };
 
-#define WIDTH (9) //k
-#define MIDDLE (8) //n
-#define HEIGHT (7) //m
+#define WIDTH (2100) //k
+#define MIDDLE (2200) //n
+#define HEIGHT (2300) //m
