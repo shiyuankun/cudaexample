@@ -4,3 +4,7 @@
 *.ptx
 *.cubin
 *.fatbin
+*.cuo
+*.cu~
+*.h~
+*.exe
