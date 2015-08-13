@@ -76,7 +76,7 @@ void
 FreeDeviceMatrix(Matrix Mdevice)
 {
     cudaFree(Mdevice->elements);
-    free(Mdevice);
+    cudaFreeHost(Mdevice);
 }
 
 void
@@ -90,11 +90,16 @@ FreeMatrix(Matrix Mhost)
 Matrix
 InitializeDevice(Matrix Mhost)
 {
-    Matrix Mdevice = (Matrix)malloc(sizeof(struct MatrixStruct));
+    Matrix Mdevice;
+    cudaMallocHost((void **)&Mdevice, sizeof(struct MatrixStruct));
+    // I spent a whole day on this sentence
+    // the address from malloc cannot be visit by device
+    // to allocate memory on host which can be visit by device
+    // you have to choose cudaMallocHost
     Mdevice->width = Mhost->width;
     Mdevice->height = Mhost->height;
     Mdevice->pitch = Mhost->pitch;
-    int size = Mdevice->width * Mdevice->height * sizeof(float);
+    int size = Mhost->width * Mhost->height * sizeof(float);
     cudaMalloc((void **)&Mdevice->elements, size);
     return Mdevice;
 }
@@ -120,5 +125,15 @@ PrintMatrix(Matrix Mhost)
         {
             printf("%f%s", Mhost->elements[i * Mhost->width + j], j == Mhost->width - 1 ? "\n" : " ");
         }
+}
+
+void
+PrintMatrixDevice(Matrix Mdevice)
+{
+    Matrix T = Initialize(Mdevice->width, Mdevice->height, 0);
+    CopyFromDeviceMatrix(T, Mdevice);
+    PrintMatrix(T);
+    free(T->elements);
+    free(T);
 }
 

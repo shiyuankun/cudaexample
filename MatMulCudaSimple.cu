@@ -4,51 +4,64 @@
 __global__ void
 MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 {
-    
     int tx = threadIdx.x;
     int ty = threadIdx.y;
     float Pvalue = 0;
-    for (int k = 0;k<M->width; ++ k)
+    for (int k = 0;k < M->width;k++)
     {
-        float Melement = M.elements[ty * M.width + k];
-        float Nelement = N.elements[k * N.width + tx];
-        Pvalue += Melement * Nelement;
+        Pvalue += M->elements[ty * M->width + k] * N->elements[k * N->width + tx];
     }
-    P.elements[ty * P.pitch + tx] = Pvalue;
+    P->elements[ty * P->pitch + tx] = Pvalue;
 }
 
-Matrix testMatrixMulOnDevice()
+void
+testMatrixMulOnDevice()
 {
-    cudaSetDevice(1);
-    Matrix M = AllocateMatrix(WIDTH, HEIGHT, 1);
-    Matrix N = AllocateMatrix(HEIGHT, WIDTH, 1);
-    Matrix P = AllocateMatrix(HEIGHT, HEIGHT, 0);
-    Matrix Md = AllocateDeviceMatrix(M);
-    Matrix Nd = AllocateDeviceMatrix(N);
-    Matrix Pd = AllocateDeviceMatrix(P);
+    cudaSetDevice(0);
+    Matrix M = Initialize(MIDDLE, HEIGHT, 1);
+    Matrix N = Initialize(WIDTH, MIDDLE, 1);
+    Matrix P = Initialize(WIDTH, HEIGHT, 0);
+    Matrix P2 = Initialize(WIDTH, HEIGHT, 0);
+    Matrix Md = InitializeDevice(M);
+    Matrix Nd = InitializeDevice(N);
+    Matrix Pd = InitializeDevice(P);
+
+    clock_t start, finish;
+    double elapsed_time;
+    start = clock();
     CopyToDeviceMatrix(Md, M);
     CopyToDeviceMatrix(Nd, N);
-    CopyToDeviceMatrix(Pd, P);
-    printf("Matrix M:\n");
-    printmatrix(M);
-    printf("Matrix N:\n");
-    printmatrix(N);
-    dim3 dimBlock(HEIGHT, HEIGHT);
+    dim3 dimBlock(WIDTH, HEIGHT);
     dim3 dimGrid(1, 1);
     MatrixMulOnDevice<<<dimGrid, dimBlock>>>(Md, Nd, Pd);
-
     CopyFromDeviceMatrix(P, Pd);
-    
-    printf("Matrix P:\n");
-    printmatrix(P);
+    finish = clock();
+    elapsed_time = (float)(finish - start) / (float)CLOCKS_PER_SEC;
+    printf("spend on simple device multiplication %f\n", elapsed_time);
+    start = clock();
+    MatrixMulOnHost(M, N, P2);
+    finish = clock();
+    elapsed_time = (float)(finish - start) / (float)CLOCKS_PER_SEC;
+    printf("spend on simple multiplication %f\n", elapsed_time);
+    if (CmpMat(P, P2))
+        printf("%s\n", "correct");
+    else
+        printf("%s\n", "wrong");
     FreeDeviceMatrix(Md);
     FreeDeviceMatrix(Nd);
     FreeDeviceMatrix(Pd);
 
     FreeMatrix(M);
     FreeMatrix(N);
-    return P;
-    /* FreeMatrix(P); */
+    FreeMatrix(P);
+    FreeMatrix(P2);
+    return;
 }
 
+int main()
+{
+    printf("Matrix Multiplication on Host\n");
+    testMatrixMulOnDevice();
+    return 0;
+}
 

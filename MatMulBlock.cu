@@ -65,19 +65,9 @@ MatMulBlkOnHostT(const Matrix M, const Matrix N, Matrix P)
             }
         }
     }
-    /* for (i = 0;i < M->height;i++) */
-    /*     for (j = 0;j < N->height;j++) */
-    /*     { */
-    /*         sum = 0.0; */
-    /*         for (k = 0;k < N->width;k++) */
-    /*         { */
-    /*             sum += M->elements[i * M->width + k] * N->elements[j * N->width + k]; */
-    /*         } */
-    /*         P->elements[i * P->width + j] = sum; */
-    /*     } */
 }
 
-Matrix
+void
 testMatrixMulOnHost()
 {
     Matrix M = Initialize(MIDDLE, HEIGHT, 1);
@@ -90,8 +80,7 @@ testMatrixMulOnHost()
     finish = clock();
     double elapsed_time = finish - start;
     printf("spend on simple multiplication %f\n", elapsed_time);
-    /* printf("Matrix P:\n"); */
-    /* PrintMatrix(P); */
+
     start = clock();
     Matrix X = TransposeHost(N);
     MatMulBlkOnHostT(M, X, Pt);
@@ -102,13 +91,12 @@ testMatrixMulOnHost()
         printf("%s\n", "correct");
     else
         printf("%s\n", "wrong");
-    /* printf("Matrix P from tranpose N:\n"); */
-    /* PrintMatrix(Pt); */
+
     FreeMatrix(M);
     FreeMatrix(N);
     FreeMatrix(Pt);
-    return P;
-// FreeMatrix(P);
+    FreeMatrix(P);
+    return;
 }
 
 
@@ -116,13 +104,6 @@ testMatrixMulOnHost()
 int main()
 {
     printf("Matrix Multiplication on Host\n");
-    Matrix h = testMatrixMulOnHost();
-    /* printf("Matrix Multiplication on Device\n"); */
-    /* Matrix d = testMatrixMulOnDevice(); */
-    /* printf("result check: "); */
-    /* if (cmp(h, d)) */
-    /*     printf("%s\n", "correct"); */
-    /* else */
-    /*     printf("%s\n", "wrong"); */
+    testMatrixMulOnHost();
     return 0;
 }
