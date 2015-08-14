@@ -62,21 +62,21 @@ void
 CopyToDeviceMatrix(Matrix Mdevice, const Matrix Mhost)
 {
     int size = Mhost->width * Mhost->height * sizeof(float);
-    cudaMemcpy(Mdevice->elements, Mhost->elements, size, cudaMemcpyHostToDevice);
+    CudaCall(cudaMemcpy(Mdevice->elements, Mhost->elements, size, cudaMemcpyHostToDevice));
 }
 
 void
 CopyFromDeviceMatrix(Matrix Mhost, const Matrix Mdevice)
 {
     int size = Mdevice->width * Mdevice->height * sizeof(float);
-    cudaMemcpy(Mhost->elements, Mdevice->elements, size, cudaMemcpyDeviceToHost);
+    CudaCall(cudaMemcpy(Mhost->elements, Mdevice->elements, size, cudaMemcpyDeviceToHost));
 }
 
 void
 FreeDeviceMatrix(Matrix Mdevice)
 {
-    cudaFree(Mdevice->elements);
-    cudaFreeHost(Mdevice);
+    CudaCall(cudaFree(Mdevice->elements));
+    CudaCall(cudaFreeHost(Mdevice));
 }
 
 void
@@ -91,7 +91,7 @@ Matrix
 InitializeDevice(Matrix Mhost)
 {
     Matrix Mdevice;
-    cudaMallocHost((void **)&Mdevice, sizeof(struct MatrixStruct));
+    CudaCall(cudaMallocHost((void **)&Mdevice, sizeof(struct MatrixStruct)));
     // I spent a whole day on this sentence
     // the address from malloc cannot be visit by device
     // to allocate memory on host which can be visit by device
@@ -100,7 +100,7 @@ InitializeDevice(Matrix Mhost)
     Mdevice->height = Mhost->height;
     Mdevice->pitch = Mhost->pitch;
     int size = Mhost->width * Mhost->height * sizeof(float);
-    cudaMalloc((void **)&Mdevice->elements, size);
+    CudaCall(cudaMalloc((void **)&Mdevice->elements, size));
     return Mdevice;
 }
 
@@ -114,6 +114,15 @@ TransposeHost(const Matrix Mhost)
         for (j = 0;j < Mhost->width;j++)
             T->elements[j * T->width + i] = Mhost->elements[i * Mhost->width + j];
     return T;
+}
+
+void
+CudaCall(cudaError signal)
+{
+    if (signal != cudaSuccess)
+    {
+        printf("Error in cuda call");
+    }
 }
 
 void

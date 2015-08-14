@@ -2,6 +2,9 @@
 // M(n,m) M(MIDDLE,HEIGHT)
 // N(k,n) N(WIDTH,MIDDLE)
 // P(k,m) P(WIDTH,HEIGHT)
+
+#ifndef _matrix_h
+#define _matrix_h
 typedef struct MatrixStruct *Matrix;
 int CmpMat(Matrix l, Matrix r);
 Matrix Initialize(int width, int height, int initval);
@@ -15,9 +18,10 @@ void PrintMatrix(Matrix Mhost);
 void PrintMatrixDevice(Matrix Mdevice);
 void randomseed();
 float random(float low, float up);
+void CudaCall(cudaError signal);
 
 void MatrixMulOnHost(const Matrix M, const Matrix N, Matrix P);
-
+#endif /* _matrix_h */ 
 
 struct MatrixStruct{
     int width;

@@ -17,7 +17,7 @@ MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
 void
 testMatrixMulOnDevice()
 {
-    cudaSetDevice(0);
+    CudaCall(cudaSetDevice(0));
     Matrix M = Initialize(MIDDLE, HEIGHT, 1);
     Matrix N = Initialize(WIDTH, MIDDLE, 1);
     Matrix P = Initialize(WIDTH, HEIGHT, 0);

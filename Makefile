@@ -19,6 +19,8 @@ MatMulBlk:
 MatMulCudaSimple:
 	$(CC) $(CFLAGS) $(UTILOBJS) MatMulSimple.cu MatMulCudaSimple.cu $< -o MatMulCudaSimple.exe
 
+MatMulCudaBlock:
+	$(CC) $(CFLAGS) $(UTILOBJS) MatMulSimple.cu MatMulCudaBlock.cu $< -o MatMulCudaBlock.exe
 
 %.exe: %.cu
 	$(CC) $(CFLAGS) $(UTILOBJS) $< -o $@
