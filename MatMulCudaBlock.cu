@@ -15,15 +15,16 @@ SetMatrixElement(Matrix Md, int x, int y, float value)
     Md->elements[y * Md->pitch + x] = value;
 }
 
-__device__ Matrix
-GetSubMatrix(Matrix Md, int x, int y)
+__device__ void
+GetSubMatrix(Matrix Md, Matrix *MdsubP, int x, int y)
 {
     MatrixStruct Mdsub;
     Mdsub.width = BLOCK_SIZE;
     Mdsub.height = BLOCK_SIZE;
     Mdsub.pitch = Md->pitch;
     Mdsub.elements = &Md->elements[Md->pitch * BLOCK_SIZE * y + BLOCK_SIZE * x];
-    return &Mdsub;
+    *MdsubP = &Mdsub;
+    return;
 }
 
 __global__ void
@@ -35,15 +36,17 @@ MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
     int tx = threadIdx.x;
     int ty = threadIdx.y;
     
-    int y = by * BLOCK_SIZE + ty;
     int x = bx * BLOCK_SIZE + tx;
+    int y = by * BLOCK_SIZE + ty;
         
     float Pvalue = 0.0f;
     
     for (int m = 0; m < (M->width - 1) / BLOCK_SIZE + 1; m++ )
     {
-        Matrix Msub = GetSubMatrix(M, m, by);
-        Matrix Nsub = GetSubMatrix(N, bx, m);
+        Matrix Msub;
+        GetSubMatrix(M, &Msub, m, by);
+        Matrix Nsub;
+        GetSubMatrix(N, &Nsub, bx, m);
 
         __shared__ float Ms[BLOCK_SIZE][BLOCK_SIZE];
         __shared__ float Ns[BLOCK_SIZE][BLOCK_SIZE];
@@ -54,6 +57,7 @@ MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
         }
         else
             Ms[tx][ty] = 0.0f;
+        
         if (x < N->width && m * BLOCK_SIZE + ty < N->height)
         {
             Ns[tx][ty] = GetMatrixElement(Nsub, tx, ty);
@@ -65,12 +69,13 @@ MatrixMulOnDevice(const Matrix M, const Matrix N, Matrix P)
         
         for (int k = 0;k < BLOCK_SIZE;k++ )
         {
-            Pvalue += Ms[tx][k] * Ns[k][ty];
+            Pvalue += Ms[k][ty] * Ns[tx][k];
         }
         
         __syncthreads();
     }
-    Matrix Psub = GetSubMatrix(P, bx, by);
+    Matrix Psub;
+    GetSubMatrix(P, &Psub, bx, by);
     if (y < P->height && x < P->width)
     {
         SetMatrixElement(Psub, tx, ty, Pvalue);
@@ -97,9 +102,9 @@ Matrix testMatrixMulOnDevice()
     CopyToDeviceMatrix(Md, M);
     CopyToDeviceMatrix(Nd, N);
     /* printf("Matrix M:\n"); */
-    /* printmatrix(M); */
+    /* PrintMatrix(M); */
     /* printf("Matrix N:\n"); */
-    /* printmatrix(N); */
+    /* PrintMatrix(N); */
 
     dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
     dim3 dimGrid((P->width - 1) / dimBlock.x + 1, (P->height - 1 )/ dimBlock.y + 1);
@@ -122,8 +127,10 @@ Matrix testMatrixMulOnDevice()
         printf("\x1B[32m%s\x1B[0m\n", "correct");
     else
         printf("\x1B[31m%s\x1B[0m\n", "wrong");
-    /* printf("Matrix P:\n"); */
-    /* printmatrix(P); */
+    /* printf("P:\n"); */
+    /* PrintMatrix(P); */
+    /* printf("P2\n"); */
+    /* PrintMatrix(P2); */
     FreeDeviceMatrix(Md);
     FreeDeviceMatrix(Nd);
     FreeDeviceMatrix(Pd);

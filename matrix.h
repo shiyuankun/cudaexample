@@ -30,6 +30,6 @@ struct MatrixStruct{
     float * elements;
 };
 
-#define WIDTH (31) //k
-#define MIDDLE (32) //n
-#define HEIGHT (33) //m
+#define WIDTH (100) //k
+#define MIDDLE (4000) //n
+#define HEIGHT (20) //m

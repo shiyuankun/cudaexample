@@ -54,8 +54,14 @@ testMatrixMulOnHost()
     Matrix P = Initialize(WIDTH, HEIGHT, 0);
     Matrix Pt = Initialize(WIDTH, HEIGHT, 0);
     clock_t start, finish;
+    printf("M\n");
+    PrintMatrix(M);
+    printf("N\n");
+    PrintMatrix(N);
     start = clock();
     MatrixMulOnHost(M, N, P);
+    printf("P\n");
+    PrintMatrix(P);
     finish = clock();
     double elapsed_time = finish - start;
     printf("spend on simple multiplication %f\n", elapsed_time);
